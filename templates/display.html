@@ -12,70 +12,47 @@
     <div class="smart-totem" id="totem-frame">
         <div class="digital-screen">
             <div id="home-layer">
-                <div class="home-content">
-                    <div class="clock" id="live-clock">00:00</div>
-                    <div style="letter-spacing: 2px; font-size: 1.8rem; margin-top: 10px;">Greetings,<br>WELCOME!</div>
+                <div class="top-info">
+                    <span class="brand-badge">PARQLY SYS</span>
+                    <div class="glass-pill">
+                        <span class="pulse-dot"></span>
+                        <span class="status-text">ACTIVE</span>
+                    </div>
+                </div>
+                <div class="center-display">
+                    <div class="sub-clock-text">Welcome! Please Enter</div>
+                    <span class="date-display" id="live-date">---</span>
+                    <div class="clock" id="live-clock">---</div>
+                </div>
+
+                <div class="bottom-status">
+                    <div class="instruction-text">Please approach slowly</div>
                 </div>
             </div>
 
             <div class="screen-glow"></div>
-            <div class="header">
-                <div class="camera-icon">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                <div class="header">
+                    <div class="camera-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    </div>
+                </div>
+                <div class="plate-container">
+                    <span class="text">LICENSE PLATE</span>
+                    <img src="../static/plate_background.png" alt="License Plate" id="licencePlate" style="width:380px;">
+                    <div id="plate"></div>
+                </div>
+                
+                <div class="footer-status">
+                    <div id="status-box">
+                        <div id="status-text">WAITING...</div>
+                    </div>
                 </div>
             </div>
-
-            <div class="plate-container">
-                <img src="../static/plate_background.png" alt="License Plate" style="width:380px;">
-                <div id="plate"></div>
-            </div>
-
-            <div class="footer-status">
-                <div id="status-box">
-                    <div id="status-text">WAITING...</div>
-                </div>
-            </div>
-        </div>
          <img src="../static/logo_display.png" alt="ParQly Logo" class="home-logo">
     </div>
     <div class="totem-stand"></div>
 </div>
 
-<script>
-const plateEl = document.getElementById("plate");
-const statusText = document.getElementById("status-text");
-const totemFrame = document.getElementById("totem-frame");
-const clockEl = document.getElementById("live-clock");
-
-function updateClock() {
-    const now = new Date();
-    clockEl.textContent =
-        now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-updateClock();
-setInterval(updateClock, 60000);
-
-const evtSource = new EventSource("/plate/stream");
-
-evtSource.onmessage = function(event) {
-    const data = JSON.parse(event.data);
-    console.log("Received SSE:", event.data);
- 
-    if (data.text && data.text !== "") {
-        plateEl.innerText = data.text;
-
-        if (data.valid) {
-            totemFrame.className = "smart-totem state-granted";
-            statusText.innerText = "ACCESS GRANTED";
-            const audio = new Audio('../static/access.mp3'); 
-            audio.play();
-        } 
-    }
-    setTimeout(() => {
-        totemFrame.className = "smart-totem";
-        plateEl.innerText = "----";
-    }, 5000);
-};
-</script>
+<script src="../static/liveData.js"></script>
 </body>
 </html>
