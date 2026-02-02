@@ -6,8 +6,10 @@ const dateEl = document.getElementById("live-date");
 
 function updateInterface() {
     const now = new Date();
-    clockEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
+    clockEl.textContent = now.toLocaleTimeString('bg-BG', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Europe/Sofia'});
     const dateOptions = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
     dateEl.textContent = now.toLocaleDateString('en-GB', dateOptions).toUpperCase();
 }
