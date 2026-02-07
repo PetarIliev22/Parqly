@@ -8,7 +8,7 @@
 }
 
 body {
-    background: url('../static/back.png');
+    background: url('../static/images/back.png');
     background-size: cover;
     display: flex;
     justify-content: center;
@@ -82,7 +82,7 @@ body {
     height: 95%; 
     display: flex; 
     flex-direction: column; 
-    background: url('../static/led_screen_dark.png');
+    background: url('../static/images/led_screen_dark.png');
     background-size: cover;
     border-radius: 30px;
     box-shadow: inset 0px 0px 11px 0px rgb(0 0 0 / 82%);
@@ -96,7 +96,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between; 
-    background: url('../static/led_screen_dark.png');
+    background: url('../static/images/led_screen_dark.png');
     background-size: cover;
     color: #f8fafc;
     padding: 1.5rem;

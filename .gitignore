@@ -3,3 +3,4 @@ runs/
 dataset_auto/
 venv/
 pycache/
+addons/
