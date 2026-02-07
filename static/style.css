@@ -255,7 +255,7 @@ body {
 
 .main-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1; }
 .label-small { font-size: 1.2rem; color: #bbbbbb; text-transform: uppercase; margin-bottom: 5px; }
-#plate { font-size: 3.5rem; font-weight: 500; color: black;}
+#plate { font-size: 3.3rem; font-weight: 600; color: rgb(57, 57, 57);font-family: sans-serif;}
 
 .footer-status { padding: 40px 20px; text-align: center; z-index: 1; }
 #status-box {
