@@ -1,0 +1,5 @@
+runs/
+*.pt
+dataset_auto/
+venv/
+pycache/

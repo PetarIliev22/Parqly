@@ -1,7 +1,8 @@
-import re, time, cv2
+import os, re, time, cv2, queue
+import easyocr
+from dotenv import load_dotenv
 from collections import defaultdict
 from queue import Queue
-import easyocr
 from supabase import create_client
 from server import update_plate, run_flask
 from threading import Thread
@@ -9,134 +10,139 @@ from ultralytics import YOLO
 
 Thread(target=run_flask, daemon=True).start()
 
+load_dotenv()
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
 CAMERA_SOURCE = 0
-SUPABASE_URL = "https://sxkwiwzeemnqvjgctvva.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4a3dpd3plZW1ucXZqZ2N0dnZhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzAzNDU4OSwiZXhwIjoyMDc4NjEwNTg5fQ.j7yG8Xgmg2o4iw0NoiGhYEdCutdfzolHxX-2pOOuf6s"
 TABLE_NAME = "plates" 
-COOLDOWN = 5  # Време за изчакване преди повторно записване на същия номер 
-PLATE_TIMEOUT = 1  # Време за изчакване преди нулиране на видимостта на номера
-CONFIRM_FRAMES = 2  # Брой последователни кадри за потвърждение на номера
-FRAME_SKIP = 2      # Пропускане на всеки N кадъра за оптимизация
-QUEUE_MAX = 1       # Максимален брой кадри в опашката
+PLATE_TIMEOUT = 1  
+CONFIRM_FRAMES = 2  
+FRAME_SKIP = 2      
+QUEUE_MAX = 1       
 
-# DATASET_DIR = "dataset_auto"
-# IMAGES_DIR = os.path.join(DATASET_DIR, "images")
-# LABELS_DIR = os.path.join(DATASET_DIR, "labels")
-
-# Регулярен израз за валиден български регистрационен номер
 BG_PLATE_REGEX = re.compile(r'^[A-Z]{1,2}[0-9]{4}[A-Z]{2}$')
-
-# # Създаване на директории, ако не съществуват
-# os.makedirs(IMAGES_DIR, exist_ok=True)
-# os.makedirs(LABELS_DIR, exist_ok=True)
 
 frame_queue = Queue(maxsize=QUEUE_MAX)
 seen_counts = defaultdict(int)
 confirmed = set()
 
-# Инициализация на EasyOCR (български език)
-reader = easyocr.Reader(['bg'], gpu=False)
-
+reader = easyocr.Reader(['bg', 'en'], gpu=False)
 model = YOLO("iliev_licence_plate.pt")
 model.fuse() 
 
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-# Функция за непрекъснато заснемане на кадри от камерата
+# тук се приемат кадри от камерата
 def capture_frames():
     cap = cv2.VideoCapture(CAMERA_SOURCE)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-    if not cap.isOpened(): return print("Cannot open camera")
+    if not cap.isOpened():
+        return "Camera not found"
     while True:
-        ret, frame = cap.read()
-        frame_queue.put(frame) if ret and not frame_queue.full() else time.sleep(0.05)
+        ret, frame = cap.read() # ret = дали кадъра (frame) е валиден True/False
+        if ret and not frame_queue.full():
+            frame_queue.put(frame)
+            continue
+        time.sleep(0.05)
 
-# Функция за почистване на текст (премахва дублирани символи и невалидни)
+# тук се извършва обработката - премахва дублирани и невалидни символи 
 def clean_text(text):
-    return re.sub(r'^(.)\1+|[^A-Z0-9]', lambda m: m.group(1) if m.group(1) else '', text.upper())
+    text = text.upper()
+    text = re.sub(r'^(.)\1+', r'\1', text)     
+    text = re.sub(r'[^A-Z0-9]', '', text)     
+    return text
 
 # OCR за разпознаване на номера от изображение
 def ocr_plate(img):
-    res = reader.readtext(
+    # списък с резултати
+    res = reader.readtext( 
         cv2.cvtColor(img, cv2.COLOR_BGR2RGB),
         allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
         detail=0
     )
-    if not res: return None
+    if not res:
+        return None
     text = clean_text(''.join(res))
     return text if 6 <= len(text) <= 9 else None  
 
-# Проверка дали даден текст е валиден български номер
-def is_valid_bg_plate(text): 
+# тук се проверява дали номера е валиден и отговаря на BG_REGEX
+def is_valid_plate(text): 
     return bool(BG_PLATE_REGEX.match(text))
 
 # Функция за запис на потвърден номер в Supabase
 def save_plate_db(text):
+    if not is_valid_plate(text):
+        print("Invalid plate:", text)
+        return
     try:
-        supabase.table(TABLE_NAME).insert({"plate_text": text}).execute()
+        res = supabase.table(TABLE_NAME).select("plate_text").eq("plate_text", text).execute()
+        if res.data:
+            supabase.table(TABLE_NAME).update({"status": "OUT"}).eq("plate_text", text).execute()
+            print(" --- Plate already exists:", text)
+        else:
+            supabase.table(TABLE_NAME).insert({"plate_text": text}).execute()
     except Exception as e:
         print("Supabase error:", e)
 
 Thread(target=capture_frames, daemon=True).start()
 print("Parking System Started. Press 'q' to QUIT.")
 
-plate_visible = False
-lastDetection = 3
-last_plate_time = 0
+last_plate = ""
+COOLDOWN = 10
+last_seen_time = {}
 
 while True:
-    if frame_queue.empty(): 
-        time.sleep(0.01)
+    current_time = time.time()
+    try:
+        frame = frame_queue.get(timeout=0.01)
+    except queue.Empty:
         continue
-    
-    frame = frame_queue.get()
 
-    # Пропускане на кадри за оптимизация
+    plate_visible = False
+    last_plate_time = current_time
+    
     results = model(frame, conf=0.4, verbose=False)
     boxes = results[0].boxes.xyxy
-    
-    # Ако няма открити номера
+
     if len(boxes) == 0:
-        if plate_visible and (time.time() - last_plate_time) > PLATE_TIMEOUT:
-            plate_visible = False
+        if plate_visible and (current_time - last_plate_time) > PLATE_TIMEOUT:
             seen_counts.clear()
             confirmed.clear()
         continue
-        
-    # Обработка на откритите номера     
+
     for box in boxes:
-        x1, y1, x2, y2 = map(int, box)
+        x1, y1, x2, y2 = (int(v) for v in box)
         plate_roi = frame[y1:y2, x1:x2]  
         text = ocr_plate(plate_roi)
-        if not text: continue
+        if not text:
+            continue
 
         plate_visible = True
-        last_plate_time = time.time()
+        last_plate_time = current_time
         
-        # Проверка на валидност и оцветяване на рамката
-        valid = is_valid_bg_plate(text)
+        valid = is_valid_plate(text)
         color = (0,255,0) if valid else (0,0,255)
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
         cv2.putText(frame, text, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
-
-        # Потвърждаване на номер след няколко последователни кадъра
+        
         current_time = time.time()
         if valid:
             seen_counts[text] += 1
-            if seen_counts[text] >= CONFIRM_FRAMES and text not in confirmed:
-                if current_time - lastDetection > COOLDOWN:
-                    confirmed.add(text)
-                    lastDetection = current_time
-                    text_with_interval = text
+            if seen_counts[text] >= CONFIRM_FRAMES:
+                if text not in last_seen_time or current_time - last_seen_time[text] > COOLDOWN:
+                    last_seen_time[text] = current_time
                     text_with_interval = f"{text[:-6]} {text[-6:-2]} {text[-2:]}"
+                    confirmed.add(text)
+                    
                     print("Confirmed Plate:", text_with_interval)
                     save_plate_db(text)
                     update_plate(text_with_interval, True)
-
-    # Показване на текущия кадър с рамки и текст
+                    time.sleep(2)   
+                    
     cv2.imshow("ParQly | ANPR Systems", frame)
-    if cv2.waitKey(1) & 0xFF == ord("q"): break
+    if cv2.waitKey(1) & 0xFF == ord("q"): 
+        break
 
 cv2.destroyAllWindows()
 print("Parking System Stopped.")

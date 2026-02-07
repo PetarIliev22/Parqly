@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
     <link rel="stylesheet" href="../static/style.css">
     <title>ParQly ANPR Smart Display</title>
 </head>
@@ -12,6 +13,7 @@
     <div class="smart-totem" id="totem-frame">
         <div class="digital-screen">
             <div id="home-layer">
+                <div class="screen-glow"></div>
                 <div class="top-info">
                     <span class="brand-badge">PARQLY SYS</span>
                     <div class="glass-pill">
@@ -52,7 +54,7 @@
     </div>
     <div class="totem-stand"></div>
 </div>
-
 <script src="../static/liveData.js"></script>
+
 </body>
 </html>
