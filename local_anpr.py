@@ -52,7 +52,7 @@ def clean_text(text):
     text = re.sub(r'^(.)\1+', r'\1', text)     
     text = re.sub(r'[^A-Z0-9]', '', text)     
     return text
-
+ 
 # OCR за разпознаване на номера от изображение
 def ocr_plate(img):
     # списък с резултати
@@ -76,73 +76,72 @@ def save_plate_db(text):
         print("Invalid plate:", text)
         return
     try:
+        now = time.strftime("%Y-%m-%d %H:%M:%S")
         res = supabase.table(TABLE_NAME).select("plate_text").eq("plate_text", text).execute()
         if res.data:
-            supabase.table(TABLE_NAME).update({"status": "OUT"}).eq("plate_text", text).execute()
+            supabase.table(TABLE_NAME).update({"status": "OUT", "time_out": now}).eq("plate_text", text).eq("status", "IN").execute()
             print(" --- Plate already exists:", text)
         else:
-            supabase.table(TABLE_NAME).insert({"plate_text": text}).execute()
+            supabase.table(TABLE_NAME).insert({"plate_text": text, "time_in": now}).execute()
     except Exception as e:
         print("Supabase error:", e)
 
 Thread(target=capture_frames, daemon=True).start()
 print("Parking System Started. Press 'q' to QUIT.")
 
-last_plate = ""
 COOLDOWN = 10
 last_seen_time = {}
+frame_count = 0
 
 while True:
-    current_time = time.time()
     try:
         frame = frame_queue.get(timeout=0.01)
     except queue.Empty:
         continue
 
-    plate_visible = False
-    last_plate_time = current_time
-    
+    frame_count += 1
+    if frame_count % FRAME_SKIP != 0:
+        continue
+
+    now = time.time()
     results = model(frame, conf=0.4, verbose=False)
     boxes = results[0].boxes.xyxy
 
     if len(boxes) == 0:
-        if plate_visible and (current_time - last_plate_time) > PLATE_TIMEOUT:
-            seen_counts.clear()
-            confirmed.clear()
         continue
 
     for box in boxes:
         x1, y1, x2, y2 = (int(v) for v in box)
-        plate_roi = frame[y1:y2, x1:x2]  
+        plate_roi = frame[y1:y2, x1:x2]
+
         text = ocr_plate(plate_roi)
         if not text:
             continue
 
-        plate_visible = True
-        last_plate_time = current_time
-        
         valid = is_valid_plate(text)
         color = (0,255,0) if valid else (0,0,255)
+
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-        cv2.putText(frame, text, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
-        
-        current_time = time.time()
-        if valid:
-            seen_counts[text] += 1
-            if seen_counts[text] >= CONFIRM_FRAMES:
-                if text not in last_seen_time or current_time - last_seen_time[text] > COOLDOWN:
-                    last_seen_time[text] = current_time
-                    text_with_interval = f"{text[:-6]} {text[-6:-2]} {text[-2:]}"
-                    confirmed.add(text)
-                    
-                    print("Confirmed Plate:", text_with_interval)
-                    save_plate_db(text)
-                    update_plate(text_with_interval, True)
-                    time.sleep(2)   
-                    
+        cv2.putText(frame, text, (x1, y1-10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+
+        if not valid:
+            continue
+
+        seen_counts[text] += 1
+        if seen_counts[text] >= CONFIRM_FRAMES:
+            if text not in last_seen_time or now - last_seen_time[text] > COOLDOWN:
+
+                last_seen_time[text] = now
+
+                text_with_interval = f"{text[:-6]} {text[-6:-2]} {text[-2:]}"
+                print("Confirmed Plate:", text_with_interval)
+
+                save_plate_db(text)
+                update_plate(text_with_interval, True)
+
     cv2.imshow("ParQly | ANPR Systems", frame)
-    if cv2.waitKey(1) & 0xFF == ord("q"): 
+    if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
 cv2.destroyAllWindows()
-print("Parking System Stopped.")
