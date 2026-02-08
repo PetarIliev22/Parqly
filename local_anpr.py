@@ -132,15 +132,12 @@ while True:
         seen_counts[text] += 1
         if seen_counts[text] >= CONFIRM_FRAMES:
             if text not in last_seen_time or now - last_seen_time[text] > COOLDOWN:
-
                 last_seen_time[text] = now
-
                 text_with_interval = f"{text[:-6]} {text[-6:-2]} {text[-2:]}"
                 print("Confirmed Plate:", text_with_interval)
-
                 save_plate_db(text)
                 update_plate(text_with_interval, True)
-
+                time.sleep(2)
     cv2.imshow("ParQly | ANPR Systems", frame)
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
