@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from collections import defaultdict
 from queue import Queue
 from supabase import create_client
-from server import update_plate, run_flask
+from server import get_resource_path, update_plate, run_flask
 from threading import Thread
 from ultralytics import YOLO
 
@@ -29,7 +29,7 @@ seen_counts = defaultdict(int)
 confirmed = set()
 
 reader = easyocr.Reader(['bg', 'en'], gpu=False)
-model = YOLO("iliev_licence_plate.pt")
+model = YOLO(get_resource_path("iliev_licence_plate.pt"))
 model.fuse() 
 
 # тук се приемат кадри от камерата
@@ -57,6 +57,7 @@ def clean_text(text):
 def ocr_plate(img):
     # списък с резултати
     res = reader.readtext( 
+        # от OpenCV към EasyOCR
         cv2.cvtColor(img, cv2.COLOR_BGR2RGB),
         allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
         detail=0

@@ -1,13 +1,27 @@
+import time, os, sys, json, webbrowser
 from flask import Flask, render_template, jsonify, Response
 from flask_cors import CORS
-from threading import Event
-import time
-import json
+from threading import Event, Timer 
 
-app = Flask(__name__, template_folder="templates", static_folder="static")
+def get_resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+app = Flask(
+    __name__, 
+    template_folder=get_resource_path("templates"), 
+    static_folder=get_resource_path("static")
+)
+
 CORS(app)
 plate_event = Event()
 latest_plate = {"text": "-", "valid": False}
+
+def open_browser():
+    webbrowser.open_new("http://127.0.0.1:5000")
 
 def update_plate(text, valid):
     global latest_plate
@@ -38,4 +52,6 @@ def plate_stream():
     return Response(event_stream(), mimetype="text/event-stream")
 
 def run_flask():
-    app.run(host="0.0.0.0", port=5000, debug=False, threaded=True)
+    Timer(2, open_browser).start()
+    app.run(host="0.0.0.0", port=5000, debug=False, threaded=True, use_reloader=False)
+    
