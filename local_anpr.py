@@ -100,9 +100,11 @@ while True:
     except queue.Empty:
         continue
 
+    # обработка на кадъра 1 от 3
     frame_count += 1
     if frame_count % FRAME_SKIP != 0:
         continue
+
 
     now = time.time()
     results = model(frame, conf=0.4, verbose=False)
@@ -112,6 +114,7 @@ while True:
         continue
 
     for box in boxes:
+        # Region of Interest -> ROI
         x1, y1, x2, y2 = (int(v) for v in box)
         plate_roi = frame[y1:y2, x1:x2]
 
@@ -130,7 +133,7 @@ while True:
             continue
 
         seen_counts[text] += 1
-        if seen_counts[text] >= CONFIRM_FRAMES:
+        if seen_counts[text] >= CONFIRM_FRAMES: # вижда поне 5 пъти кадъра за да потвърди
             if text not in last_seen_time or now - last_seen_time[text] > COOLDOWN:
                 last_seen_time[text] = now
                 text_with_interval = f"{text[:-6]} {text[-6:-2]} {text[-2:]}"

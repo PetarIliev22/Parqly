@@ -37,6 +37,7 @@ def index():
 def plate():
     return jsonify(latest_plate)
 
+# Server-Sent Events - изпраща към браузъра само ако има засечен номер
 @app.route("/plate/stream")
 def plate_stream():
     def event_stream():
