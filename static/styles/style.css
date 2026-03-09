@@ -247,11 +247,11 @@ body {
 .header { padding: 40px 20px 20px; text-align: center; z-index: 1; }
 .camera-icon {
     width: 40px; height: 40px; margin: 35px auto;
-    border: 2px solid var(--accent-blue);
+    border: 2px solid white;
+    color: white;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    color: var(--accent-blue);
-    box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+    box-shadow: 0 0 15px #ef44446b;
 }
 
 .main-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1; }
@@ -264,22 +264,21 @@ body {
     border-radius: 20px; padding: 6px;
     border: 1px solid rgba(255,255,255,0.05);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    margin-top: 40px;
+    margin: 10px 0 15px 0;
 }
 #status-text { font-size: 18px; font-weight: 600; color: #64748b; }
+#message-text { font-size: 17px; font-weight: 700; color: #b1b2b3; text-transform: uppercase; letter-spacing: 2px; margin-top: 10px;  }
 
 .state-granted .screen-glow { background: radial-gradient(circle at 50% 20%, rgba(34, 197, 94, 0.2) 0%, transparent 70%); border: 2px solid rgba(0, 147, 27, 0.64); border-radius: 30px; }
-.state-granted #status-box { background: rgb(34 197 94 / 46%); border-color: var(--success); }
+.state-granted #status-box { background: rgb(34 197 94 / 46%);}
 .state-granted #status-text { color: white; }
 .state-granted .camera-icon { border-color: var(--success); color: var(--success); }
 .state-granted .live-view-screen { border-color: var(--success); }
 
 .state-error .screen-glow { background: radial-gradient(circle at 50% 20%, rgba(239, 68, 68, 0.25) 0%, transparent 70%); border: 2px solid rgba(185, 28, 28, 0.75); border-radius: 30px; }
-.state-error #status-box { background: rgb(239 68 68 / 45%); border-color: var(--error); }
+.state-error #status-box { background: rgb(239 68 68 / 45%)}
 .state-error #status-text { color: white; }
-.state-error .camera-icon { border-color: var(--error); color: var(--error); }
 .state-error .live-view-screen { border-color: var(--error); }
-
 
 @keyframes blink { 50% { opacity: 0.2; } }
 @keyframes move-scan { 0% { top: 0; } 100% { top: 100%; } }

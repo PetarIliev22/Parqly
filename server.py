@@ -1,7 +1,18 @@
 import time, os, sys, json, webbrowser
-from flask import Flask, render_template, jsonify, Response
+from flask import Flask, render_template, jsonify, Response, request
 from flask_cors import CORS
+from supabase import create_client
+from dotenv import load_dotenv
 from threading import Event, Timer 
+
+load_dotenv()
+
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+TABLE_NAME = "plates"
 
 def get_resource_path(relative_path):
     try:
@@ -28,7 +39,10 @@ def update_plate(text, valid):
     latest_plate = {"text": text, "valid": valid}
     print(f"Updated plate: {latest_plate}")
     plate_event.set()
-    
+
+def format_plate(text):
+    return f"{text[:-6]} {text[-6:-2]} {text[-2:]}"
+
 @app.route("/")
 def index():
     return render_template("display.html")
@@ -36,6 +50,68 @@ def index():
 @app.route("/plate")
 def plate():
     return jsonify(latest_plate)
+
+@app.route("/api/plate", methods=["POST"])
+def receive_plate():
+
+    data = request.json
+    plate = data.get("plate")
+    formatted_plate = format_plate(plate)
+    
+    if not plate:
+        return jsonify({"error": "No plate"}), 400
+
+    now = time.strftime("%Y-%m-%d %H:%M:%S")
+
+    try:
+        res = supabase.table(TABLE_NAME)\
+            .select("*")\
+            .eq("plate_text", plate)\
+            .eq("status", "IN")\
+            .execute()
+
+        if res.data:
+
+            carPlate = res.data[0]
+            
+            if carPlate['paid'] and not carPlate['can_exit']:
+                supabase.table(TABLE_NAME).update({
+                    "can_exit": True,
+                    "time_out": now
+                }).eq("plate_text", plate).execute()
+                carPlate['can_exit'] = True
+                
+            if not carPlate['can_exit']:
+                print("NOT EXITABLE:", plate)
+                update_plate(formatted_plate, False)
+                return jsonify({"error": "NOT EXITABLE"}), 400
+            
+            supabase.table(TABLE_NAME)\
+                .update({
+                    "status": "OUT"
+                })\
+                .eq("plate_text", plate)\
+                .eq("status", "IN")\
+                .execute()
+
+            print("EXIT:", plate)
+            update_plate(formatted_plate, True)
+        
+        else:
+            supabase.table(TABLE_NAME).insert({
+                "plate_text": plate,
+                "status": "IN",
+                "paid": False,
+                "can_exit": False,
+                "time_in": now
+            }).execute()
+
+            print("ENTER:", plate)
+
+        return jsonify({"status": "ok"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 @app.route("/plate/stream")
 def plate_stream():

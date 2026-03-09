@@ -1,28 +1,20 @@
-import os, re, time, cv2, queue
+import os, re, time, cv2, queue, requests
 import easyocr
+from server import format_plate
 from dotenv import load_dotenv
 from collections import defaultdict
 from queue import Queue
-from supabase import create_client
 from server import get_resource_path, update_plate, run_flask
 from threading import Thread
 from ultralytics import YOLO
 
 Thread(target=run_flask, daemon=True).start()
 
-load_dotenv()
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
 CAMERA_SOURCE = 0
-TABLE_NAME = "plates" 
 PLATE_TIMEOUT = 1  
-CONFIRM_FRAMES = 2  
+CONFIRM_FRAMES = 2
 FRAME_SKIP = 2      
 QUEUE_MAX = 1       
-
-BG_PLATE_REGEX = re.compile(r'^[A-Z]{1,2}[0-9]{4}[A-Z]{2}$')
 
 frame_queue = Queue(maxsize=QUEUE_MAX)
 seen_counts = defaultdict(int)
@@ -55,38 +47,42 @@ def clean_text(text):
  
 # OCR за разпознаване на номера от изображение
 def ocr_plate(img):
-    # списък с резултати
-    res = reader.readtext( 
-        # от OpenCV към EasyOCR
+    res = reader.readtext(
         cv2.cvtColor(img, cv2.COLOR_BGR2RGB),
         allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
-        detail=0
+        detail=1
     )
     if not res:
         return None
-    text = clean_text(''.join(res))
-    return text if 6 <= len(text) <= 9 else None  
+    # взимаме резултатите с confidence > 0.6
+    filtered = [r for r in res if r[2] > 0.6]
+
+    if not filtered:
+        return None
+
+    # съединяваме по реда на координатите (ляво -> дясно)
+    filtered = sorted(filtered, key=lambda x: x[0][0][0])
+
+    text = ''.join([r[1] for r in filtered])
+    text = clean_text(text)
+
+    if 6 <= len(text) <= 9:
+        return text
+    return None
 
 # тук се проверява дали номера е валиден и отговаря на BG_REGEX
-def is_valid_plate(text): 
-    return bool(BG_PLATE_REGEX.match(text))
+def is_valid_plate(text):
+    if not text:
+        return False
+    if not any(c.isalpha() for c in text):
+        return False
+    if not any(c.isdigit() for c in text):
+        return False
+    if len(text) < 5:
+        return False
+    return True
 
 # Функция за запис на потвърден номер в Supabase
-def save_plate_db(text):
-    if not is_valid_plate(text):
-        print("Invalid plate:", text)
-        return
-    try:
-        now = time.strftime("%Y-%m-%d %H:%M:%S")
-        res = supabase.table(TABLE_NAME).select("plate_text").eq("plate_text", text).execute()
-        if res.data:
-            supabase.table(TABLE_NAME).update({"status": "OUT", "time_out": now}).eq("plate_text", text).eq("status", "IN").execute()
-            print(" --- Plate already exists:", text)
-        else:
-            supabase.table(TABLE_NAME).insert({"plate_text": text, "time_in": now}).execute()
-    except Exception as e:
-        print("Supabase error:", e)
-
 Thread(target=capture_frames, daemon=True).start()
 print("Parking System Started. Press 'q' to QUIT.")
 
@@ -105,39 +101,45 @@ while True:
         continue
 
     now = time.time()
-    results = model(frame, conf=0.4, verbose=False)
+    results = model(frame, conf=0.5, iou=0.5, verbose=False)
     boxes = results[0].boxes.xyxy
 
     if len(boxes) == 0:
         continue
 
-    for box in boxes:
-        x1, y1, x2, y2 = (int(v) for v in box)
-        plate_roi = frame[y1:y2, x1:x2]
+    box = max(boxes, key=lambda b: (b[2]-b[0]) * (b[3]-b[1]))
+    x1, y1, x2, y2 = (int(v) for v in box)
+    plate_roi = frame[y1:y2, x1:x2]
 
-        text = ocr_plate(plate_roi)
-        if not text:
-            continue
+    text = ocr_plate(plate_roi)
+    if not text:
+        continue
 
-        valid = is_valid_plate(text)
-        color = (0,255,0) if valid else (0,0,255)
+    valid = is_valid_plate(text)
+    color = (0,255,0) if valid else (0,0,255)
 
-        cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-        cv2.putText(frame, text, (x1, y1-10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+    cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+    cv2.putText(frame, text, (x1, y1-10),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
-        if not valid:
-            continue
+    if not valid:
+        continue
 
-        seen_counts[text] += 1
-        if seen_counts[text] >= CONFIRM_FRAMES:
-            if text not in last_seen_time or now - last_seen_time[text] > COOLDOWN:
-                last_seen_time[text] = now
-                text_with_interval = f"{text[:-6]} {text[-6:-2]} {text[-2:]}"
-                print("Confirmed Plate:", text_with_interval)
-                save_plate_db(text)
-                update_plate(text_with_interval, True)
-                time.sleep(2)
+    seen_counts[text] += 1
+    if seen_counts[text] >= CONFIRM_FRAMES:
+        if text not in last_seen_time or now - last_seen_time[text] > COOLDOWN:
+            last_seen_time[text] = now
+            print("Confirmed Plate:", text)
+            try:
+                requests.post(
+                    "http://127.0.0.1:5000/api/plate",
+                    json={"plate": text}
+                )
+            except:
+                print("Server not reachable")
+            update_plate(format_plate(text), True)
+            time.sleep(4)
+            
     cv2.imshow("ParQly | ANPR Systems", frame)
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break

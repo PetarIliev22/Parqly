@@ -1,5 +1,6 @@
 const plateEl = document.getElementById("plate");
 const statusText = document.getElementById("status-text");
+const messageText = document.getElementById("message-text");
 const totemFrame = document.getElementById("totem-frame");
 const clockEl = document.getElementById("live-clock");
 const dateEl = document.getElementById("live-date");
@@ -7,7 +8,7 @@ const evtSource = new EventSource("/plate/stream");
 
 function updateInterface() {
     const now = new Date();
-    clockEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    clockEl.textContent = now.toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Sofia' });
     
     const dateOptions = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
     dateEl.textContent = now.toLocaleDateString('en-GB', dateOptions).toUpperCase();
@@ -23,15 +24,18 @@ evtSource.onmessage = function(event) {
         
         if (data.valid) {
             totemFrame.classList.add("state-granted");
+            messageText.innerText = "The operation was successful. You may proceed.";
             statusText.innerText = "ACCESS GRANTED";
-            new Audio('../static/sounds/access.mp3').play().catch(() => {});
+            new Audio('../static/sounds/sound.mp3').play().catch(() => {});
             
             setTimeout(() => {
                 totemFrame.classList.remove("state-granted");
             }, 3000);
         } else {
             totemFrame.classList.add("state-error");
+            messageText.innerText = "The operation was unsuccessful. Please pay the parking fee.";
             statusText.innerText = "ACCESS DENIED";
+            new Audio('../static/sounds/sound.mp3').play().catch(() => {});
             setTimeout(() => {
                 totemFrame.classList.remove("state-error")
             }, 3000);
