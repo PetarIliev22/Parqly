@@ -9,7 +9,7 @@ from threading import Thread
 from ultralytics import YOLO
 
 Thread(target=run_flask, daemon=True).start()
-
+ 
 CAMERA_SOURCE = 0
 PLATE_TIMEOUT = 1  
 CONFIRM_FRAMES = 2
@@ -96,11 +96,9 @@ while True:
     except queue.Empty:
         continue
 
-    # обработка на кадъра 1 от 3
     frame_count += 1
     if frame_count % FRAME_SKIP != 0:
         continue
-
 
     now = time.time()
     results = model(frame, conf=0.5, iou=0.5, verbose=False)
@@ -109,16 +107,9 @@ while True:
     if len(boxes) == 0:
         continue
 
-<<<<<<< HEAD
     box = max(boxes, key=lambda b: (b[2]-b[0]) * (b[3]-b[1]))
     x1, y1, x2, y2 = (int(v) for v in box)
     plate_roi = frame[y1:y2, x1:x2]
-=======
-    for box in boxes:
-        # Region of Interest -> ROI
-        x1, y1, x2, y2 = (int(v) for v in box)
-        plate_roi = frame[y1:y2, x1:x2]
->>>>>>> 3927cfbe0a5924bea7c4fd80d27ec9e74369ae94
 
     text = ocr_plate(plate_roi)
     if not text:
@@ -134,7 +125,6 @@ while True:
     if not valid:
         continue
 
-<<<<<<< HEAD
     seen_counts[text] += 1
     if seen_counts[text] >= CONFIRM_FRAMES:
         if text not in last_seen_time or now - last_seen_time[text] > COOLDOWN:
@@ -150,17 +140,6 @@ while True:
             update_plate(format_plate(text), True)
             time.sleep(4)
             
-=======
-        seen_counts[text] += 1
-        if seen_counts[text] >= CONFIRM_FRAMES: # вижда поне 5 пъти кадъра за да потвърди
-            if text not in last_seen_time or now - last_seen_time[text] > COOLDOWN:
-                last_seen_time[text] = now
-                text_with_interval = f"{text[:-6]} {text[-6:-2]} {text[-2:]}"
-                print("Confirmed Plate:", text_with_interval)
-                save_plate_db(text)
-                update_plate(text_with_interval, True)
-                time.sleep(2)
->>>>>>> 3927cfbe0a5924bea7c4fd80d27ec9e74369ae94
     cv2.imshow("ParQly | ANPR Systems", frame)
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break

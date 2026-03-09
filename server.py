@@ -51,7 +51,6 @@ def index():
 def plate():
     return jsonify(latest_plate)
 
-<<<<<<< HEAD
 @app.route("/api/plate", methods=["POST"])
 def receive_plate():
 
@@ -114,9 +113,6 @@ def receive_plate():
     except Exception as e:
         return jsonify({"error": str(e)})
 
-=======
-# Server-Sent Events - изпраща към браузъра само ако има засечен номер
->>>>>>> 3927cfbe0a5924bea7c4fd80d27ec9e74369ae94
 @app.route("/plate/stream")
 def plate_stream():
     def event_stream():
