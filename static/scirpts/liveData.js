@@ -17,28 +17,38 @@ function updateInterface() {
 updateInterface();
 setInterval(updateInterface, 1000);
 
+const chime = new Audio('../static/sounds/sound.mp3');
+
 evtSource.onmessage = function(event) {
-    const data = JSON.parse(event.data);
-    if (data.text && data.text !== "") {
+    try {
+        const data = JSON.parse(event.data);
+        if (!data.text) return;
+
         plateEl.innerText = data.text;
+
+        const config = data.valid ? {
+            class: "state-granted",
+            msg: "The operation was successful. You may proceed.",
+            status: "ACCESS GRANTED"
+        } : {
+            class: "state-error",
+            msg: "The operation was unsuccessful. Please pay the parking fee.",
+            status: "ACCESS DENIED"
+        };
+
+        totemFrame.classList.add(config.class);
+        messageText.innerText = config.msg;
+        statusText.innerText = config.status;
         
-        if (data.valid) {
-            totemFrame.classList.add("state-granted");
-            messageText.innerText = "The operation was successful. You may proceed.";
-            statusText.innerText = "ACCESS GRANTED";
-            new Audio('../static/sounds/sound.mp3').play().catch(() => {});
-            
-            setTimeout(() => {
-                totemFrame.classList.remove("state-granted");
-            }, 3000);
-        } else {
-            totemFrame.classList.add("state-error");
-            messageText.innerText = "The operation was unsuccessful. Please pay the parking fee.";
-            statusText.innerText = "ACCESS DENIED";
-            new Audio('../static/sounds/sound.mp3').play().catch(() => {});
-            setTimeout(() => {
-                totemFrame.classList.remove("state-error")
-            }, 3000);
-        }
+        chime.currentTime = 0;
+        chime.play().catch(() => {});
+
+        // 4. Почистване
+        setTimeout(() => {
+            totemFrame.classList.remove(config.class);
+        }, 3000);
+
+    } catch (e) {
+        console.error("Грешка при обработка на събитието:", e);
     }
 };

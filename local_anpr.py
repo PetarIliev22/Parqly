@@ -14,7 +14,7 @@ CAMERA_SOURCE = 0
 PLATE_TIMEOUT = 1  
 CONFIRM_FRAMES = 2
 FRAME_SKIP = 2      
-QUEUE_MAX = 1       
+QUEUE_MAX = 1    
 
 frame_queue = Queue(maxsize=QUEUE_MAX)
 seen_counts = defaultdict(int)
