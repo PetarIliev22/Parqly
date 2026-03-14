@@ -1,4 +1,4 @@
-# <img src="./static/images/readme/logo.png" width="200"> – The Smart Future of Parking
+# <img src="./static/images/readme/logo.png" width="150"> – The Smart Future of Parking
 
 ![Parqly Brochure](./static/images/readme/flyer.png "Parqly Brochure")
 
@@ -36,6 +36,7 @@ These screens are displayed at the entry/exit points to provide real-time feedba
 
 <p align="center">
   <img src="./static/images/readme/screen2.png" width="315" alt="Access Granted UI">
+  <div style="width: 10px"></div>
   <img src="./static/images/readme/screen.png" width="315" alt="Terminal Feedback">
 </p>
 
@@ -46,6 +47,7 @@ A lightweight, mobile-first web app that allows users to manage their parking se
 
 <p align="center">
   <img src="./static/images/readme/app.png" width="300" alt="Payment Interface Main">
+  <div style="width: 10px"></div>
   <img src="./static/images/readme/app2.png" width="300" alt="Payment Processing">
 </p>
 
