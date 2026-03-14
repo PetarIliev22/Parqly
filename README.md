@@ -17,7 +17,7 @@ Our mission is to empower parking owners with full automation, transforming ever
 A high-performance Python-based module that processes live video feeds.
 * **Detection:** Powered by **YOLOv8** to locate license plates in milliseconds.
 * **Recognition:** Utilizes **EasyOCR** for precise character extraction.
-* **Logic:** Smart filtering and regex validation specifically tuned for European/Bulgarian plate formats.
+* **Logic:** Intelligent plate classification and dynamic validation using an array of regex patterns to accurately verify multiple regional formats.
 
 ### 2. Smart Payment Web App (The "Wallet")
 A mobile-first web application designed for the modern driver.
@@ -31,8 +31,8 @@ A mobile-first web application designed for the modern driver.
 </p>
 
 <p align="center">
-  <img src="./static/images/readme/screen.png" width="315" alt="Access Granted UI">
   <img src="./static/images/readme/screen2.png" width="315" alt="Access Granted UI">
+  <img src="./static/images/readme/screen.png" width="315" alt="Access Granted UI">
 </p>
 
 ### 3. Cloud Backend (The "Brain")
@@ -72,7 +72,7 @@ A mobile-first web application designed for the modern driver.
 ### Installation
 ```bash
 # Clone the repository
-git clone [https://github.com/your-username/parqly.git](https://github.com/your-username/parqly.git)
+git clone https://github.com/PetarIliev22/Parqly.git
 
 # Install required libraries
 pip install -r requirements.txt
