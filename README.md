@@ -26,8 +26,13 @@ A mobile-first web application designed for the modern driver.
 * **Instant Validation:** Once payment is confirmed via the cloud, the exit barrier is granted access immediately.
 
 <p align="center">
-  <img src="assets/image_d1e2ea.png" width="350" alt="Payment Interface">
-  <img src="assets/image_d1e2af.jpg" width="315" alt="Access Granted UI">
+  <img src="./static/images/readme/app.png" width="350" alt="Payment Interface">
+  <img src="./static/images/readme/app2.png" width="350" alt="Payment Interface">
+</p>
+
+<p align="center">
+  <img src="./static/images/readme/screen.png" width="315" alt="Access Granted UI">
+  <img src="./static/images/readme/screen2.png" width="315" alt="Access Granted UI">
 </p>
 
 ### 3. Cloud Backend (The "Brain")
