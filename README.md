@@ -1,4 +1,4 @@
-# <img src="./static/images/readme/logo.png" width="100"> – The Smart Future of Parking
+# <img src="./static/images/readme/logo.png" width="125"> – The Smart Future of Parking
 
 ![Parqly Brochure](./static/images/readme/flyer.png "Parqly Brochure")
 
