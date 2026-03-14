@@ -1,4 +1,4 @@
-# <img src="./static/images/readme/logo.png" width="125"> – The Smart Future of Parking
+# <img src="./static/images/readme/logo.png" width="115"> – The Smart Future of Parking
 
 ![Parqly Brochure](./static/images/readme/flyer.png "Parqly Brochure")
 
@@ -19,7 +19,7 @@ A high-performance Python-based module that processes live video feeds.
 * **Recognition:** Utilizes **EasyOCR** for precise character extraction.
 * **Logic:** Intelligent plate classification and dynamic validation using an array of regex patterns to accurately verify multiple regional formats.
 
-### 2. Smart Payment Web App (The "Wallet")
+### 2. Smart Payment Web App
 A mobile-first web application designed for the modern driver.
 * **No Apps Required:** Users simply scan a QR code upon entry or exit.
 * **Search & Pay:** Drivers enter their license plate to see their real-time balance.
