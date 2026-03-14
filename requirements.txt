@@ -1,0 +1,8 @@
+ultralytics
+easyocr
+opencv-python
+requests
+python-dotenv
+flask
+flask-cors
+supabase
