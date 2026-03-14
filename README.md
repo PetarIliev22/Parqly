@@ -1,6 +1,6 @@
-# 🚗 Parqly – The Smart Future of Parking
+# <img src="assets/image_d1e2ea.png" width="350">– The Smart Future of Parking
 
-![Parqly Brochure](assets/image_d1e324.jpg)
+![Parqly Brochure](./static/images/readme/flyer.png "Parqly Brochure")
 
 **Parqly** is a comprehensive software solution for modern parking management. It transforms traditional parking lots into fully automated digital hubs by combining **Computer Vision** (ANPR) with a seamless mobile payment ecosystem.
 
