@@ -1,4 +1,4 @@
-# <img src="./static/images/readme/logo.png" width="250">– The Smart Future of Parking
+# <img src="./static/images/readme/logo.png" width="200"> – The Smart Future of Parking
 
 ![Parqly Brochure](./static/images/readme/flyer.png "Parqly Brochure")
 
@@ -25,14 +25,28 @@ A mobile-first web application designed for the modern driver.
 * **Search & Pay:** Drivers enter their license plate to see their real-time balance.
 * **Instant Validation:** Once payment is confirmed via the cloud, the exit barrier is granted access immediately.
 
-<p align="center">
-  <img src="./static/images/readme/app.png" width="350" alt="Payment Interface">
-  <img src="./static/images/readme/app2.png" width="350" alt="Payment Interface">
-</p>
+## 📱 Interface Overview
+
+The system consists of two primary interfaces: the **Terminal Display** (at the parking gate) and the **Mobile Payment App** (for the user).
+
+### 🖥️ Parking Terminal Interface
+These screens are displayed at the entry/exit points to provide real-time feedback to the driver.
+* **Recognition State:** Shows the captured license plate.
+* **Access Control:** Displays "Access Granted" or payment requirements.
 
 <p align="center">
   <img src="./static/images/readme/screen2.png" width="315" alt="Access Granted UI">
-  <img src="./static/images/readme/screen.png" width="315" alt="Access Granted UI">
+  <img src="./static/images/readme/screen.png" width="315" alt="Terminal Feedback">
+</p>
+
+### 📱 Mobile Payment Application
+A lightweight, mobile-first web app that allows users to manage their parking session.
+* **Search & Pay:** Users enter their plate number to fetch their current stay duration and fee.
+* **Status Updates:** Real-time synchronization with the database to allow immediate exit after payment.
+
+<p align="center">
+  <img src="./static/images/readme/app.png" width="300" alt="Payment Interface Main">
+  <img src="./static/images/readme/app2.png" width="300" alt="Payment Processing">
 </p>
 
 ### 3. Cloud Backend (The "Brain")
