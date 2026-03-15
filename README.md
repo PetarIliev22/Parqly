@@ -92,4 +92,4 @@ git clone https://github.com/PetarIliev22/Parqly.git
 pip install -r requirements.txt
 
 # Launch the system
-python main.py
+python local_anpr.py

@@ -16,6 +16,8 @@ CONFIRM_FRAMES = 2
 FRAME_SKIP = 2      
 QUEUE_MAX = 1    
 
+BG_PLATE_REGEX = re.compile(r'^[A-Z]{1,2}[0-9]{4}[A-Z]{2}$')
+
 frame_queue = Queue(maxsize=QUEUE_MAX)
 seen_counts = defaultdict(int)
 confirmed = set()
@@ -71,16 +73,19 @@ def ocr_plate(img):
     return None
 
 # тук се проверява дали номера е валиден и отговаря на BG_REGEX
-def is_valid_plate(text):
-    if not text:
-        return False
-    if not any(c.isalpha() for c in text):
-        return False
-    if not any(c.isdigit() for c in text):
-        return False
-    if len(text) < 5:
-        return False
-    return True
+# def is_valid_plate(text):
+#     if not text:
+#         return False
+#     if not any(c.isalpha() for c in text):
+#         return False
+#     if not any(c.isdigit() for c in text):
+#         return False
+#     if len(text) < 5:
+#         return False
+#     return True
+
+def is_valid_plate(text): 
+    return bool(BG_PLATE_REGEX.match(text))
 
 # Функция за запис на потвърден номер в Supabase
 Thread(target=capture_frames, daemon=True).start()

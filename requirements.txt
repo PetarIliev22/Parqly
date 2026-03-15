@@ -1,8 +1,19 @@
-ultralytics
-easyocr
-opencv-python
-requests
-python-dotenv
+# Python версия: 3.10 или 3.11
 flask
 flask-cors
+python-dotenv
+requests
+
+# Supabase client
 supabase
+
+# OpenCV
+opencv-python
+
+# EasyOCR и Torch - фиксирани версии за стабилност
+torch==2.3.1
+torchvision==0.18.1
+easyocr==1.7.0
+
+# Ultralytics YOLO
+ultralytics
