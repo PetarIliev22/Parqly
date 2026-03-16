@@ -34,11 +34,14 @@ def capture_frames():
     if not cap.isOpened():
         return "Camera not found"
     while True:
-        ret, frame = cap.read() # ret = дали кадъра (frame) е валиден True/False
-        if ret and not frame_queue.full():
-            frame_queue.put(frame)
+        ret, frame = cap.read()
+        if not ret:
+            time.sleep(0.1)
             continue
-        time.sleep(0.05)
+        try:
+            frame_queue.put(frame, timeout=0.05)
+        except queue.Full:
+            pass  
 
 # тук се извършва обработката - премахва дублирани и невалидни символи 
 def clean_text(text):

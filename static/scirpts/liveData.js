@@ -43,10 +43,9 @@ evtSource.onmessage = function(event) {
         chime.currentTime = 0;
         chime.play().catch(() => {});
 
-        // 4. Почистване
         setTimeout(() => {
             totemFrame.classList.remove(config.class);
-        }, 3000);
+        }, 5000);
 
     } catch (e) {
         console.error("Грешка при обработка на събитието:", e);
