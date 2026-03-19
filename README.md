@@ -6,7 +6,7 @@
 
 ---
 
-## 🌟 Vision & Goal
+## Vision & Goal
 Our mission is to empower parking owners with full automation, transforming every parking space into an optimized source of revenue. We eliminate human error, reduce waiting times, and provide a "Park & Pay" experience that is entirely ticketless and frictionless.
 
 ---
@@ -25,11 +25,11 @@ A mobile-first web application designed for the modern driver.
 * **Search & Pay:** Drivers enter their license plate to see their real-time balance.
 * **Instant Validation:** Once payment is confirmed via the cloud, the exit barrier is granted access immediately.
 
-## 📱 Interface Overview
+## Interface Overview
 
 The system consists of two primary interfaces: the **Terminal Display** (at the parking gate) and the **Mobile Payment App** (for the user).
 
-### 🖥️ Parking Terminal Interface
+### Parking Terminal Interface
 These screens are displayed at the entry/exit points to provide real-time feedback to the driver.
 * **Recognition State:** Shows the captured license plate.
 * **Access Control:** Displays "Access Granted" or payment requirements.
@@ -39,7 +39,7 @@ These screens are displayed at the entry/exit points to provide real-time feedba
   &nbsp;&nbsp;&nbsp;&nbsp; <img src="./static/images/readme/screen.png" width="315" alt="Terminal Feedback">
 </p>
 
-### 📱 Mobile Payment Application
+### Mobile Payment Application
 A lightweight, mobile-first web app that allows users to manage their parking session.
 * **Search & Pay:** Users enter their plate number to fetch their current stay duration and fee.
 * **Status Updates:** Real-time synchronization with the database to allow immediate exit after payment.
@@ -76,12 +76,11 @@ A lightweight, mobile-first web app that allows users to manage their parking se
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 * Python 3.9+
 * Webcam or IP Camera
-* Supabase Account & Credentials
 
 ### Installation
 ```bash
