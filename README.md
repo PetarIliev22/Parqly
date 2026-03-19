@@ -1,4 +1,4 @@
-# <img src="./static/images/readme/logo.png" width="115"> – The Smart Future of Parking
+# ParQly – The Smart Future of Parking
 
 ![Parqly Brochure](./static/images/readme/flyer.png "Parqly Brochure")
 
