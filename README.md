@@ -85,9 +85,9 @@ Displays real-time feedback at entry/exit points.
 - Access granted / payment required  
 
 <p align="center">
-  <img src="./static/images/readme/screen2.png" width="315" alt="Access Granted UI">
+  <img src="./static/images/readme/screen2.png" width="250" alt="Access Granted UI">
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="./static/images/readme/screen.png" width="315" alt="Terminal Feedback">
+  <img src="./static/images/readme/screen.png" width="250" alt="Terminal Feedback">
 </p>
 
 ---
@@ -101,9 +101,9 @@ Allows users to manage and pay for their parking session.
 - Complete payment instantly  
 
 <p align="center">
-  <img src="./static/images/readme/app.png" width="300" alt="Payment Interface Main">
+  <img src="./static/images/readme/app.png" width="250" alt="Payment Interface Main">
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="./static/images/readme/app2.png" width="300" alt="Payment Processing">
+  <img src="./static/images/readme/app2.png" width="250" alt="Payment Processing">
 </p>
 
 ---
