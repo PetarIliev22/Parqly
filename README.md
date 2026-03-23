@@ -1,88 +1,180 @@
-# ParQly – The Smart Future of Parking
+# 🚀 Parqly – Smart Parking Automation Platform
 
-![Parqly Brochure](./static/images/readme/flyer.png "Parqly Brochure")
+![Parqly Logo](./static/images/readme/logo.png "Parqly")
 
-**Parqly** is a comprehensive software solution for modern parking management. It transforms traditional parking lots into fully automated digital hubs by combining **Computer Vision** (ANPR) with a seamless mobile payment ecosystem.
+**Parqly** is a full-stack smart parking solution that automates vehicle access, tracking, and payments using **Computer Vision (ANPR)** and a seamless **QR-based mobile payment system**.
 
----
-
-## Vision & Goal
-Our mission is to empower parking owners with full automation, transforming every parking space into an optimized source of revenue. We eliminate human error, reduce waiting times, and provide a "Park & Pay" experience that is entirely ticketless and frictionless.
+It eliminates tickets, reduces operational costs, and delivers a fully frictionless **“Park & Pay”** experience.
 
 ---
 
-## System Components
+# Vision
 
-### 1. ANPR Engine (The "Eyes")
-A high-performance Python-based module that processes live video feeds.
-* **Detection:** Powered by **YOLOv8** to locate license plates in milliseconds.
-* **Recognition:** Utilizes **EasyOCR** for precise character extraction.
-* **Logic:** Intelligent plate classification and dynamic validation using an array of regex patterns to accurately verify multiple regional formats.
+Our mission is to digitize and automate parking infrastructure by transforming traditional parking lots into **intelligent, self-operating systems**.
 
-### 2. Smart Payment Web App
-A mobile-first web application designed for the modern driver.
-* **No Apps Required:** Users simply scan a QR code upon entry or exit.
-* **Search & Pay:** Drivers enter their license plate to see their real-time balance.
-* **Instant Validation:** Once payment is confirmed via the cloud, the exit barrier is granted access immediately.
+Parqly enables:
+- Instant vehicle recognition  
+- Ticketless payments  
+- Zero human intervention  
+- Increased revenue efficiency  
 
-## Interface Overview
+---
 
-The system consists of two primary interfaces: the **Terminal Display** (at the parking gate) and the **Mobile Payment App** (for the user).
+# System Architecture
 
-### Parking Terminal Interface
-These screens are displayed at the entry/exit points to provide real-time feedback to the driver.
-* **Recognition State:** Shows the captured license plate.
-* **Access Control:** Displays "Access Granted" or payment requirements.
+Camera → ANPR Engine → Flask API → Database → Web App → Barrier Control
+
+
+### Components:
+
+- Camera Feed (IP/Webcam)
+- ANPR Engine (Python)
+- Backend API (Flask)
+- Database (PostgreSQL / Supabase)
+- Mobile Web App
+
+---
+
+# Core Components
+
+## 1. Computer Vision Module (ANPR Engine)
+
+The system’s core recognition engine responsible for real-time license plate detection.
+
+### Features:
+
+- Custom-Trained Detection Model: YOLOv8 trained on license plate datasets  
+- OCR Recognition: EasyOCR for text extraction  
+- Validation Layer: Regex-based plate verification  
+- High recognition accuracy under standard conditions  
+- Low-latency processing suitable for real-time applications   
+
+---
+
+## 2. Smart Payment Web App
+
+A mobile-first web application with zero installation required.
+
+### Key Features:
+- QR Code Access (no app needed)  
+- Auto-detected or manually entered plate  
+- Real-time fee calculation  
+- Instant payment confirmation  
+
+---
+
+# 🖥️ Interface Overview
+
+The system consists of two primary interfaces: the parking terminal and the mobile web application.
+
+## Parking Terminal Interface
+
+Displays real-time feedback at entry/exit points.
+
+- License plate recognition  
+- Access granted / payment required  
 
 <p align="center">
   <img src="./static/images/readme/screen2.png" width="315" alt="Access Granted UI">
-  &nbsp;&nbsp;&nbsp;&nbsp; <img src="./static/images/readme/screen.png" width="315" alt="Terminal Feedback">
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="./static/images/readme/screen.png" width="315" alt="Terminal Feedback">
 </p>
 
-### Mobile Payment Application
-A lightweight, mobile-first web app that allows users to manage their parking session.
-* **Search & Pay:** Users enter their plate number to fetch their current stay duration and fee.
-* **Status Updates:** Real-time synchronization with the database to allow immediate exit after payment.
+---
+
+## Mobile Payment Application
+
+Allows users to manage and pay for their parking session.
+
+- Search by license plate  
+- View duration and cost  
+- Complete payment instantly  
 
 <p align="center">
   <img src="./static/images/readme/app.png" width="300" alt="Payment Interface Main">
-  &nbsp;&nbsp;&nbsp;&nbsp; <img src="./static/images/readme/app2.png" width="300" alt="Payment Processing">
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="./static/images/readme/app2.png" width="300" alt="Payment Processing">
 </p>
 
-### 3. Cloud Backend (The "Brain")
-* **Flask API:** Acts as the central nervous system, connecting the vision module and the payment site.
-* **Supabase (PostgreSQL):** A secure, real-time database that tracks vehicle sessions (Time In/Out), payment status, and security logs.
+---
+
+## 3. Backend Services
+
+Central system logic and communication layer.
+
+### Tech Stack:
+
+- Flask API  
+- Supabase (PostgreSQL)  
+
+### Responsibilities:
+
+- Manage parking sessions (IN / OUT)  
+- Handle payment validation  
+- Sync data between ANPR and frontend  
+- Maintain logs  
 
 ---
 
-## Key Benefits & Features
+# Security
+
+- HTTPS-secured API communication  
+- Real-time session validation  
+- Audit logs for vehicle activity  
+
+---
+
+# Key Features
 
 | Feature | Description |
-| :--- | :--- |
-| **Fast Recognition** | High-speed software recognizes plates instantly with zero delays. |
-| **Instant Access** | Automated entry/exit for registered or paid vehicles. |
-| **Lower Costs** | Eliminates the need for on-site staff and physical ticket machines. |
-| **Eco-Friendly** | Reduces engine idling and paper waste from physical tickets. |
-| **Maximum Security** | Maintains a digital log of every vehicle with time-stamped entries. |
+|--------|------------|
+| Fast Recognition | Instant plate detection |
+| Ticketless Access | Fully digital parking |
+| Cost Reduction | No staff or machines |
+| Eco-Friendly | No paper tickets |
+| Real-Time Sync | Instant payment validation |
+| Scalable | Multi-location support |
 
 ---
 
-## Workflow Overview
+# Workflow
 
-1.  **Vehicle Approaches:** The ANPR camera detects the vehicle and captures the plate.
-2.  **Session Created:** A new record is inserted into Supabase with the "IN" status.
-3.  **Payment:** The user accesses the **Parqly Web App**, searches for their plate, and pays.
-4.  **Access Granted:** Upon exit, the camera recognizes the plate again, verifies the "Paid" status, and triggers the barrier.
+1. Vehicle approaches entrance  
+2. ANPR detects and reads plate  
+3. Session is created (IN)  
+4. User pays via web app  
+5. Exit camera verifies payment  
+6. Barrier opens automatically  
 
 ---
 
-## Getting Started
+# Edge Case Handling
 
-### Prerequisites
-* Python 3.9+
-* Webcam or IP Camera
+- Failed recognition retry  
+- Manual override  
+- Invalid plate filtering  
 
-### Installation
+---
+
+# Scalability
+
+- Multi-camera support  
+- Cloud backend  
+- Horizontal scaling ready  
+
+---
+
+# Getting Started
+
+## Prerequisites
+
+- Python 3.9+  
+- Webcam or IP Camera  
+
+---
+
+## Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/PetarIliev22/Parqly.git
