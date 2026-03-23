@@ -1,4 +1,4 @@
-# 🚀 Parqly – Smart Parking Automation Platform
+# Parqly – Smart Parking Automation Platform
 
 ![Parqly Logo](./static/images/readme/logo.png "Parqly")
 
@@ -22,8 +22,18 @@ Parqly enables:
 
 # System Architecture
 
-Camera → ANPR Engine → Flask API → Database → Web App → Barrier Control
+The Parqly system is designed as a fully automated, end-to-end smart parking solution.  
+Each component communicates in real-time to ensure seamless detection, payment, and barrier control.
 
+![System Architecture](./static/images/readme/mermaid-diagram.png)
+
+**Flow Overview:**
+1. Camera captures vehicle license plates  
+2. ANPR Engine detects and recognizes the plate  
+3. Flask API processes session data  
+4. Database stores sessions and payment status  
+5. Web App allows users to pay and monitor parking  
+6. Barrier Control opens gates based on verified payment
 
 ### Components:
 
@@ -63,7 +73,7 @@ A mobile-first web application with zero installation required.
 
 ---
 
-# 🖥️ Interface Overview
+# Interface Overview
 
 The system consists of two primary interfaces: the parking terminal and the mobile web application.
 
