@@ -1,7 +1,6 @@
 import os, re, time, cv2, queue, requests
 import easyocr
 from server import format_plate
-from dotenv import load_dotenv
 from collections import defaultdict
 from queue import Queue
 from server import get_resource_path, update_plate, run_flask

@@ -17,7 +17,7 @@ function updateInterface() {
 updateInterface();
 setInterval(updateInterface, 1000);
 
-const chime = new Audio('../static/sounds/sound.mp3');
+const sound = new Audio('../static/sounds/sound.mp3');
 
 evtSource.onmessage = function(event) {
     try {
@@ -26,25 +26,32 @@ evtSource.onmessage = function(event) {
 
         plateEl.innerText = data.text;
 
-        const config = data.valid ? {
-            class: "state-granted",
-            msg: "The operation was successful. You may proceed.",
-            status: "ACCESS GRANTED"
-        } : {
-            class: "state-error",
-            msg: "The operation was unsuccessful. Please pay the parking fee.",
-            status: "ACCESS DENIED"
-        };
+        if (!data.text || data.valid !== true) {
+            plateEl.innerText = data.text || "UNKNOWN";
+            totemFrame.classList.add("state-error");
+            messageText.innerText = "The operation was unsuccessful. Please pay the parking fee.";
+            statusText.innerText = "ACCESS DENIED";
 
-        totemFrame.classList.add(config.class);
-        messageText.innerText = config.msg;
-        statusText.innerText = config.status;
-        
-        chime.currentTime = 0;
-        chime.play().catch(() => {});
+            sound.currentTime = 0;
+            sound.play().catch(() => {});
+
+            setTimeout(() => {
+                totemFrame.classList.remove("state-error");
+            }, 5000);
+
+            return;
+        }
+
+        plateEl.innerText = data.text;
+        totemFrame.classList.add("state-granted");
+        messageText.innerText = "The operation was successful. You may proceed.";
+        statusText.innerText = "ACCESS GRANTED";
+
+        sound.currentTime = 0;
+        sound.play().catch(() => {});
 
         setTimeout(() => {
-            totemFrame.classList.remove(config.class);
+            totemFrame.classList.remove("state-granted");
         }, 5000);
 
     } catch (e) {

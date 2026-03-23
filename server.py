@@ -5,16 +5,13 @@ from supabase import create_client
 from dotenv import load_dotenv
 from threading import Event, Timer
 
-# FIX SSL freeze
 ssl._create_default_https_context = ssl._create_unverified_context
 
 load_dotenv()
-
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
 TABLE_NAME = "plates"
-
 supabase = None
 
 def get_supabase():
@@ -31,7 +28,6 @@ def get_resource_path(relative_path):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
-
 app = Flask(
     __name__,
     template_folder=get_resource_path("templates"),
@@ -43,10 +39,8 @@ CORS(app)
 plate_event = Event()
 latest_plate = {"text": "-", "valid": False}
 
-
 def open_browser():
     webbrowser.open_new("http://127.0.0.1:5000")
-
 
 def update_plate(text, valid):
     global latest_plate
@@ -54,20 +48,16 @@ def update_plate(text, valid):
     print("Updated plate:", latest_plate)
     plate_event.set()
 
-
 def format_plate(text):
     return f"{text[:-6]} {text[-6:-2]} {text[-2:]}"
-
 
 @app.route("/")
 def index():
     return render_template("display.html")
 
-
 @app.route("/plate")
 def plate():
     return jsonify(latest_plate)
-
 
 @app.route("/api/plate", methods=["POST"])
 def receive_plate():
