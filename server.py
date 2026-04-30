@@ -20,7 +20,6 @@ def get_supabase():
         supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
     return supabase
 
-
 def get_resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
