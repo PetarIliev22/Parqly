@@ -1,19 +1,22 @@
-import os, re, time, cv2, queue, requests
+import re, time, cv2, queue, requests, numpy as np
 import easyocr
-from server import format_plate
 from collections import defaultdict
 from queue import Queue
-from server import get_resource_path, update_plate, run_flask
 from threading import Thread
 from ultralytics import YOLO
+
+from server import format_plate
+from server import get_resource_path, update_plate, run_flask
 
 Thread(target=run_flask, daemon=True).start()
  
 CAMERA_SOURCE = 0
 PLATE_TIMEOUT = 1  
 CONFIRM_FRAMES = 2
-FRAME_SKIP = 2      
+FRAME_SKIP = 3      
 QUEUE_MAX = 1    
+LATEST_FRAME = None
+LATEST_TIME = 0
 
 BG_PLATE_REGEX = re.compile(r'^[A-Z]{1,2}[0-9]{4}[A-Z]{2}$')
 
@@ -27,6 +30,8 @@ model.fuse()
 
 # тук се приемат кадри от камерата
 def capture_frames():
+    global LATEST_FRAME, LATEST_TIME
+    
     cap = cv2.VideoCapture(CAMERA_SOURCE)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
@@ -37,10 +42,9 @@ def capture_frames():
         if not ret:
             time.sleep(0.1)
             continue
-        try:
-            frame_queue.put(frame, timeout=0.05)
-        except queue.Full:
-            pass  
+        LATEST_FRAME = frame
+        LATEST_TIME = time.time()
+    
 
 # тук се извършва обработката - премахва дублирани и невалидни символи 
 def clean_text(text):
@@ -94,61 +98,88 @@ Thread(target=capture_frames, daemon=True).start()
 print("Parking System Started. Press 'q' to QUIT.")
 
 COOLDOWN = 10
+CONFIRM_FRAMES = 2
+
 last_seen_time = {}
-frame_count = 0
+seen_counts = {}
+last_yolo = 0
 
 while True:
-    try:
-        frame = frame_queue.get(timeout=0.01)
-    except queue.Empty:
-        continue
-
-    frame_count += 1
-    if frame_count % FRAME_SKIP != 0:
-        continue
-
+    frame = LATEST_FRAME
     now = time.time()
-    results = model(frame, conf=0.5, iou=0.5, verbose=False)
+
+    if frame is None:
+        continue
+
+    if now - last_yolo < 0.4:
+        cv2.imshow("ParQly | ANPR Systems", frame)
+        cv2.waitKey(1)
+        continue
+
+    last_yolo = now
+
+    results = model.predict(frame, conf=0.5, iou=0.5, verbose=False)
     boxes = results[0].boxes.xyxy
 
-    if len(boxes) == 0:
+    if boxes is None or len(boxes) == 0:
+        cv2.imshow("ParQly | ANPR Systems", frame)
+        cv2.waitKey(1)
         continue
 
     box = max(boxes, key=lambda b: (b[2]-b[0]) * (b[3]-b[1]))
-    x1, y1, x2, y2 = (int(v) for v in box)
+    x1, y1, x2, y2 = map(int, box)
+
+    h, w = frame.shape[:2]
+    x1, y1 = max(0, x1), max(0, y1)
+    x2, y2 = min(w, x2), min(h, y2)
+
     plate_roi = frame[y1:y2, x1:x2]
 
     text = ocr_plate(plate_roi)
+
     if not text:
+        cv2.imshow("ParQly | ANPR Systems", frame)
+        cv2.waitKey(1)
         continue
 
     valid = is_valid_plate(text)
-    color = (0,255,0) if valid else (0,0,255)
+
+    color = (0, 255, 0) if valid else (0, 0, 255)
 
     cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-    cv2.putText(frame, text, (x1, y1-10),
+    cv2.putText(frame, text, (x1, y1 - 10),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
-    if not valid:
-        continue
+    if valid:
+        for k in list(seen_counts.keys()):
+            if k != text:
+                seen_counts[k] = 0
 
-    seen_counts[text] += 1
-    if seen_counts[text] >= CONFIRM_FRAMES:
-        if text not in last_seen_time or now - last_seen_time[text] > COOLDOWN:
-            last_seen_time[text] = now
-            print("Confirmed Plate:", text)
-            try:
-                requests.post(
-                    "http://127.0.0.1:5000/api/plate",
-                    json={"plate": text}
-                )
-            except:
-                print("Server not reachable")
-            update_plate(format_plate(text), True)
-            time.sleep(4)
-            
+        seen_counts[text] = seen_counts.get(text, 0) + 1
+
+        if seen_counts[text] >= CONFIRM_FRAMES:
+
+            if text not in last_seen_time or now - last_seen_time[text] > COOLDOWN:
+
+                last_seen_time[text] = now
+                seen_counts[text] = 0
+
+                try:
+                    requests.post(
+                        "http://127.0.0.1:5000/api/plate",
+                        json={"plate": text},
+                        timeout=2
+                    )
+                except:
+                    pass
+
+                update_plate(format_plate(text), True)
+
     cv2.imshow("ParQly | ANPR Systems", frame)
+
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
+
+    time.sleep(0.01)
 
 cv2.destroyAllWindows()
