@@ -1,4 +1,4 @@
-import re, time, cv2, queue, requests, numpy as np
+import re, time, cv2, requests, numpy as np
 import easyocr
 from collections import defaultdict
 from queue import Queue
